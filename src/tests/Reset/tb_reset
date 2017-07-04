@@ -1,0 +1,45 @@
+`include "BancoPruebasReset.v"
+`include "HardReset.v" 
+
+module HardReset_tb;
+
+input wire [31:0] tiempoMaximoTimer;
+
+output wire [2:0] Transmit;
+output wire phy_request;
+output wire ALERT_TransmitSuccessful;
+output wire ALERT_TransmitSOPMessageFailed;
+
+Banco_Pruebas_Reset BancoPruebas (
+.clk(clk), 
+.hard_reset_L(hard_reset_L), 
+.cable_reset_L(cable_reset_L), 
+.max_reset_timer(tiempoMaximoTimer), 
+.phy_response(phy_response)
+);
+
+HardResetTransmission Hard_Reset (
+.clk(clk), 
+.hard_reset_L(hard_reset_L), 
+.cable_reset_L(cable_reset_L), 
+.max_reset_timer(tiempoMaximoTimer), 
+.phy_response(phy_response), 
+.transmit(Transmit), 
+.phy_request(phy_request), 
+.ALERT_TransmitSOPMessageFailed(ALERT_TransmitSOPMessageFailed),
+.ALERT_TransmitSuccessful(ALERT_TransmitSuccessful)
+);
+
+    //-- Proceso al inicio
+initial begin
+    
+  //-- Fichero donde almacenar los resultados
+  $dumpfile("pruebasReset.vcd");
+  $dumpvars(0, HardReset_tb);
+    
+  # 100 $display("FIN de la simulacion");
+  $finish;
+end
+
+
+endmodule
