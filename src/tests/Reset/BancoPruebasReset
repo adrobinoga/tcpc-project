@@ -1,0 +1,37 @@
+module Banco_Pruebas_Reset(
+output reg clk,
+output reg hard_reset_L,
+output reg cable_reset_L,
+output reg [31:0] max_reset_timer,
+output reg phy_response
+);
+
+
+  initial
+    begin
+
+      clk=0;
+      hard_reset_L<=0;
+      cable_reset_L<=0;
+      max_reset_timer<=32'hFFFFFFFF;
+      phy_response<=0;
+
+
+      #5 hard_reset_L <= 1;
+      #7 cable_reset_L<= 1;
+      #8 phy_response <= 1;
+      #9 hard_reset_L <= 0;
+      #10 cable_reset_L<= 1;
+
+
+      $finish;
+    end
+
+
+//-- Generador de reloj. Periodo 2 unidades
+always 
+	begin
+  # 1 clk <= ~clk;
+    	end
+
+endmodule
