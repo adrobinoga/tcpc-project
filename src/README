@@ -1,0 +1,9 @@
+===Contenidos===
+Los archivos *_setup definen los archivos fuente a utilizar en la simulacion/compilacion, eso incluye los modulos(i2c_slave, rx, tx etc), los bancos de pruebas(testbench.v) y los modulos probadores(tester.v)
+
+Los archivos de prueba se incluyen en la carpeta tests.
+
+===Simulacion===
+La prueba que se desea ejecutar se escoge con la utilidad make
+
+

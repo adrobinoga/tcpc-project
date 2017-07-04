@@ -1,0 +1,22 @@
+[*]
+[*] GTKWave Analyzer v3.3.66 (w)1999-2015 BSI
+[*] Tue Jul  4 19:52:34 2017
+[*]
+[dumpfile] "/media/moss/data/documents/universidad/cursos/Digitales II/proyecto final/repo/tcpc-project/src/testbench.vcd"
+[dumpfile_mtime] "Tue Jul  4 19:52:12 2017"
+[dumpfile_size] 2044
+[savefile] "/media/moss/data/documents/universidad/cursos/Digitales II/proyecto final/repo/tcpc-project/src/tests/rx/default_sel.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] -1 -1
+*-3.601650 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 225
+[signals_width] 270
+[sst_expanded] 1
+[sst_vpaned_height] 160
+@28
+Rx_tb.ALERT_ReceiveSOPStatusAsserted
+@29
+Rx_tb.ALERT_TxMessageDiscarded
+[pattern_trace] 1
+[pattern_trace] 0

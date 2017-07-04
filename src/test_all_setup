@@ -1,0 +1,4 @@
+tests/all/testbench.v
+tests/all/tester.v
+
+-c modules/v_modules
