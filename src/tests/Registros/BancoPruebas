@@ -1,0 +1,50 @@
+//pruebas usando el registro h51 como ejemplo, primero se le hace un write luego un read
+
+module Banco_Pruebas_Registros(
+output reg clk,
+output reg RNW,
+output reg [15:0] WR_DATA,
+output reg REQUEST,
+output reg [7:0] ADDR
+);
+
+//output ACK,
+
+  initial
+    begin
+
+      clk <= 0;
+      RNW <= 0;
+      ADDR <= 16'h51;
+      WR_DATA <= 16'h40;
+      REQUEST <= 0;
+
+
+      #4 REQUEST <= 1;
+      #5  RNW <= 1;
+
+      #7 REQUEST <= 0;
+         RNW <= 0;
+
+      #8 REQUEST <= 1;
+         RNW <= 1;
+
+      #9 REQUEST <= 1;
+         RNW <= 1;
+
+      #10 REQUEST <= 1;
+         RNW <= 1;
+
+      #11 REQUEST <= 0;
+         RNW <= 0;
+
+      $finish;
+    end
+
+//-- Generador de reloj. Periodo 2 unidades
+always 
+	begin
+  # 1 clk <= ~clk;
+    	end
+
+endmodule
