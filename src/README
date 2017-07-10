@@ -37,6 +37,16 @@ se sustituye por:
 	SCL=0;
 	...
 
+Los parametros tiene el siguiente uso:
+
+I2C.READ( 	(direccion del dispositivo << 1) + RWbit,
+		numero de bytes a leer, 
+		tiempo entre cambios)
+
+I2C.WRITE( 	(direccion del dispositivo << 1) + RWbit, 
+		bytes a escribir, 
+		tiempo entre cambios)
+
 ===Implementar nuevas pruebas===
 Para crear una nueva prueba se debe seguir una serie de pasos:
 

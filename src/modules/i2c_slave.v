@@ -302,16 +302,8 @@ always @(*)
 			inc_count = 	1;
 			rst_count = 	0;
 			D_ready = 	0;
-			if (!SCL)
-				begin
-				SDA_en = 	1;
-				SDA_o = 	Q[7-bit_count];
-				end
-			else
-				begin
-				//SDA_en = 	0;
-				//SDA_o = 	0;
-				end
+			SDA_en = 	1;
+			SDA_o = 	Q[7-bit_count];
 			SCL_en = 	0;
 			SCL_o =		0;
 			end
