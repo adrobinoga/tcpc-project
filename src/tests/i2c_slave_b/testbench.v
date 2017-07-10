@@ -39,6 +39,6 @@ initial
 
 always #1 CLK=~CLK;
 
-initial #5000 $finish;
+initial #10000 $finish;
 
 endmodule

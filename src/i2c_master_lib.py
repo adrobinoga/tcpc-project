@@ -1,24 +1,25 @@
 #! /usr/bin/python2.7
 
 import sys
+import os.path
 
 filename = sys.argv[1]
-print sys.argv
 f = open(filename, 'r')
-n=0
 
-tester_insts = ""
+lines = f.readlines()
+for k in range(len(lines)):
 
-for l in f.readlines():
-
-    n +=1
+    tester_insts = ""
+    l = lines[k]
 
     if "I2C.WRITE" in l:
-        print "linea ", n, " :", l
+        print "linea ", k, " :", l
         print "MACRO", l[ l.find("(")+1 : l.find(")")]
-        params = l[ l.find("(")+1 : l.find(")")].split(",")
 
-        # parse address of device and RW bit
+        # parse macro parameters
+        params = l[l.find("(")+1: l.find(")")].split(",")
+
+        # parse device address and RW bit
         addrprw = bin(int(params[0].strip(), 16))[2:].zfill(8)
         addr = addrprw[:-1]
         rwb = addrprw[-1]
@@ -30,6 +31,7 @@ for l in f.readlines():
         udelay = "\n\t\t#"+params[2].strip()
 
         # generate start condition
+        tester_insts += "\n\t\t// START CONDITION"
         tester_insts += udelay
         tester_insts += "\n\t\t" + "SCL=0;"
         tester_insts += udelay
@@ -37,9 +39,9 @@ for l in f.readlines():
         tester_insts += udelay
         tester_insts += "\n\t\t" + "SCL=1;"
         tester_insts += udelay
-        tester_insts += "\n\t\t" + "SDA=1;"
-        tester_insts += udelay
         tester_insts += "\n\t\t" + "SDA=0;"
+        tester_insts += udelay
+        tester_insts += "\n\t\t" + "SCL=0;"
 
         # write address
         n=0
@@ -47,7 +49,7 @@ for l in f.readlines():
             tester_insts += udelay
             tester_insts += "\n\t\t" + "SCL=0;"
             tester_insts += udelay
-            tester_insts += "\n\t\t" + "SDA=" + b + "; // addres bit " + n
+            tester_insts += "\n\t\t" + "SDA=" + b + "; // addres bit " + str(n)
             tester_insts += udelay
             tester_insts += "\n\t\t" + "SCL=1;"
             tester_insts += udelay
@@ -60,7 +62,7 @@ for l in f.readlines():
         tester_insts += udelay
         tester_insts += "\n\t\t" + "SCL=0;"
         tester_insts += udelay
-        tester_insts += "\n\t\t" + "SDA=" + rwb + "; // RW bit "
+        tester_insts += "\n\t\t" + "SDA=0; // RW bit "
         tester_insts += udelay
         tester_insts += "\n\t\t" + "SCL=1;"
         tester_insts += udelay
@@ -70,20 +72,28 @@ for l in f.readlines():
 
         # disconnect for ack
         tester_insts += udelay
+        tester_insts += "\n\t\t" + "SCL=0;"
+        tester_insts += udelay
         tester_insts += "\n\t\t" + "SDA=1'hz;"
+        tester_insts += udelay
+        tester_insts += "\n\t\t" + "SCL=1;"
+        tester_insts += udelay
+        tester_insts += "\n\t\t" + "SCL=0;"
+        tester_insts += udelay
+        tester_insts += "\n\t\t" + "SDA=0;"
 
         # write bytes
         for d in data_bytes:
             if d:
-                bin(int(d, 16))[2:].zfill(8)
+                d = bin(int(d, 16))[2:].zfill(8)
                 print "Write byte:", d
 
                 n = 0
-                for b in addr:
+                for b in d:
                     tester_insts += udelay
                     tester_insts += "\n\t\t" + "SCL=0;"
                     tester_insts += udelay
-                    tester_insts += "\n\t\t" + "SDA=" + b + "; // addres bit " + n
+                    tester_insts += "\n\t\t" + "SDA=" + b + "; // data bit " + str(n)
                     tester_insts += udelay
                     tester_insts += "\n\t\t" + "SCL=1;"
                     tester_insts += udelay
@@ -92,7 +102,20 @@ for l in f.readlines():
                     tester_insts += "\n\t\t" + "SDA=0;"
                     n += 1
 
+                # disconnect for ack
+                tester_insts += udelay
+                tester_insts += "\n\t\t" + "SCL=0;"
+                tester_insts += udelay
+                tester_insts += "\n\t\t" + "SDA=1'hz;"
+                tester_insts += udelay
+                tester_insts += "\n\t\t" + "SCL=1;"
+                tester_insts += udelay
+                tester_insts += "\n\t\t" + "SCL=0;"
+                tester_insts += udelay
+                tester_insts += "\n\t\t" + "SDA=0;"
+
         # generate stop condition
+        tester_insts += "\n\t\t// STOP CONDITION"
         tester_insts += udelay
         tester_insts += "\n\t\t" + "SCL=0;"
         tester_insts += udelay
@@ -102,8 +125,14 @@ for l in f.readlines():
         tester_insts += udelay
         tester_insts += "\n\t\t" + "SDA=1;"
         tester_insts += udelay
+        tester_insts += "\n\t\t" + "SCL=0;"
+        tester_insts += udelay
         tester_insts += "\n\t\t" + "SDA=0;"
 
+        lines[k] = tester_insts
 
-print tester_insts
+f = open(os.path.join(os.path.dirname(filename), "tester_generated.v"), 'w')
+f.writelines(lines)
+f.close()
+
 

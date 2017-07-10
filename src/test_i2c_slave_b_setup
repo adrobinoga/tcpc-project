@@ -1,0 +1,3 @@
+tests/i2c_slave_b/testbench.v
+tests/i2c_slave_b/tester_generated.v
+modules/i2c_slave.v

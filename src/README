@@ -7,3 +7,48 @@ Los archivos de prueba se incluyen en la carpeta tests.
 La prueba que se desea ejecutar se escoge con la utilidad make
 
 
+===Macros de i2c_master_lib===
+Para simplificar el trabajo de realizar pruebas se generan los valores de un master i2c, con el script i2c_master_lib.py. Dicho script encuentra dichas palabras clave como I2C.WRITE(...) y las sustituye por las los valores de SDA y SCL correspondientes para simular el master i2c
+
+Ejemplo:
+ 
+	I2C.WRITE( c0, 31 43  ff , 20)
+
+se sustituye por:
+
+	// START CONDITION
+	#20
+	SCL=0;
+	#20
+	SDA=1;
+	#20
+	SCL=1;
+	#20
+	SDA=0;
+	#20
+	SCL=0;
+	#20
+	SCL=0;
+	#20
+	SDA=1; // addres bit 0
+	#20
+	SCL=1;
+	#20
+	SCL=0;
+	...
+
+===Implementar nuevas pruebas===
+Para crear una nueva prueba se debe seguir una serie de pasos:
+
+1. Crear la carpeta de prueba dentro de la carpeta tests/
+
+2. Crear el archivo xxxxx_setup con las referencias a los archivos necesarios
+
+3. Agregar la entrada en el Makefile
+
+Si el archivo de tester tiene macros de i2c_master_lib hay que procesar el archivo antes(para sustituir los macros)
+
+./i2c_master_lib.py tests/i2c_slave_b/tester.v
+
+El archivo a utilizar como tester en el _setup es el archivo tester_generated.v (archivo de salida del script i2c_master_lib.py)
+

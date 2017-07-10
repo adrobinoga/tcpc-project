@@ -1,0 +1,24 @@
+Descripcion de las pruebas
+
+all:
+	Prueba basica de la union de todos los modulos
+	
+hard_reset:
+	Prueba basica del modulo hard_reset
+	
+i2c_slave: 
+	Prueba basica del modulo i2c_slave
+	
+i2c_slave:
+	Prueba basica del modulo i2c_slave pero usando macros de i2c_master_lib
+	
+registers:
+	Prueba basica del modulo de registers
+	
+rx:
+	Prueba basica del modulo rx
+
+tx: 
+	Prueba basica del modulo tx
+
+

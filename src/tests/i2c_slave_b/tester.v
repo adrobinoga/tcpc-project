@@ -10,7 +10,7 @@ integer PLAN;
 
 initial
 	begin
-	PLAN = 2;
+	PLAN = 1;
 	case (PLAN)
 	1:
 	begin
@@ -20,117 +20,11 @@ initial
 	RESET = 0;
 	Q=8'b10101001;
 	ENB = 1;
-	SCL = 1;
-	SDA = 1;
-	#20
-	SDA = 0;
-	#20
-	SCL = 0;
-	I2C.WRITE( c1,31 43  ff , 20)
-	#7
-	SDA = 1;
-	#10
-	SCL = 1; //b7
-	#10
-	SCL = 0;
-	#10 
-	SCL = 1; //b6
-	#10
-	SCL = 0;
 	
-	#10
-	SDA = 0;
-	#10
-	SCL = 0;
-	#10
-	SCL = 1; //b5
-	#10
-	SCL = 0;
-	#10 
-	SCL = 1; //b4
-	#10
-	SCL = 0;
-	#10
-	SCL = 1; //b3
-	#10
-	SCL = 0;	
-	#10
-	SCL = 1; //b2
-	#10
-	SCL = 0;
-	#10 
-	SCL = 1; //b1
-	#10
-	SCL = 0;
-	#10
-	SCL = 1; //b0 RW
-	#10
-	SCL = 0;
-	#10
-	SCL = 0;
-	#10
-	SCL = 1; //ACK
-	#10
-	SCL = 0;
+	I2C.WRITE( c0,31 43  ff , 20)
 	
-	// writes 10111000
-	#10
-	SDA = 1;
-	#10
-	SCL = 1; //b7
-	#10
-	SCL = 0;
-	#10 
-	SDA = 0;
-	#10
-	SCL = 1; //b6
-	#10
-	SCL = 0;
-	#10
-	SDA = 1;
-	#10
-	SCL = 0;
-	#10
-	SCL = 1; //b5
-	#10
-	SCL = 0;
-	#10 
-	SCL = 1; //b4
-	#10
-	SCL = 0;
-	#10
-	SCL = 1; //b3
-	#10
-	SCL = 0;
-	#10
-	SDA = 0;	
-	#10
-	SCL = 1; //b2
-	#10
-	SCL = 0;
-	#10 
-	SCL = 1; //b1
-	#10
-	SCL = 0;
-	#20
-	SDA = 1;
-	#10
-	SCL = 1; //b0 
-	#10
-	SCL = 0;
-	#10
-	SDA = 0;
-	#10
-	SCL = 1; //ACK
-	#10
-	SCL = 0;
-	
-	#20
-	SCL = 1;
-	#5
-	SDA = 0;
-	#5
-	SDA = 1;
+	I2C.WRITE( a0, 4 , 20)
+	I2C.WRITE( c0, 6 , 20)
 	end
 	
 	2:

@@ -1,2 +1,3 @@
 *.out
 *.vcd
+tester_generated.v
