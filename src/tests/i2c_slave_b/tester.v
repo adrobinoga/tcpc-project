@@ -10,7 +10,7 @@ integer PLAN;
 
 initial
 	begin
-	PLAN = 1;
+	PLAN = 2;
 	case (PLAN)
 	1:
 	begin
@@ -26,7 +26,7 @@ initial
 	SDA = 0;
 	#20
 	SCL = 0;
-	
+	I2C.WRITE( c1,31 43  ff , 20)
 	#7
 	SDA = 1;
 	#10
@@ -119,7 +119,7 @@ initial
 	#10
 	SCL = 0;
 	#10
-	SDA = 1'hz;
+	SDA = 0;
 	#10
 	SCL = 1; //ACK
 	#10

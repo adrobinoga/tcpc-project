@@ -1,5 +1,13 @@
 module tx(	
 	output reg PassBytes,
+	input [7:0] TRANSMIT,
+	input [7:0] TX_BUF_HEADER_BYTE_1,
+	input [7:0] RX_BUF_HEADER_BYTE_1,
+	input [7:0] RX_BUF_FRAME_TYPE,
+	input MessageSenToPhy,
+	input GoodCRCResponse,
+	input CRC_RT_Timeout,
+	input MessageDiscardedBusIdle
 	input reset,
 	input clk
 	);
@@ -19,8 +27,6 @@ reg[7:0] next_state;
 
 /*
 reg MID_Match;
-reg MessageSentToPhy;
-reg GoodCRCResponse;
 reg CRC_RT_Timeout;
 reg MessageDiscardedBusIdle;
 reg RetryCounter;
@@ -30,9 +36,6 @@ reg SOPmatch;
 reg TX_BUF_HEADER_BYTE_1;
 reg RX_BUF_HEADER_BYTE_1;
 reg[2:0] RX_BUF_FRAME_TYPE;
-
-
-reg[2:0] TRANSMIT;
 
 input wire DFP, UFP;
 input wire MessageIDCounter;
@@ -63,14 +66,6 @@ always@(*)
 		next_state =  Tx_Construct_Message;
 		end
 	
-	Tx_Check_RetryCounter: 
-		begin
-		if (RetryCounter > nRetryCount) 
-			next_state = Tx_Report_Failure;
-		else 
-			next_state = Tx_Construct_Message;
-		end
-	
 	Tx_Construct_Message: 
 		begin
 		if (MessageSentToPhy) 
@@ -78,7 +73,7 @@ always@(*)
 		else 
 			next_state = Tx_Construct_Message;
 		end
-	
+		
 	Tx_Wait_for_PHY_response: 
 		begin
 		if (GoodCRCResponse) 
@@ -87,13 +82,16 @@ always@(*)
 			if (CRC_RT_Timeout | MessageDiscardedBusIdle) 
 				next_state =  Tx_Check_RetryCounter;
 		end
-	
-	Tx_Report_Failure: 
+		
+	Tx_Check_RetryCounter: 
 		begin
-		next_state = Tx_Wait_for_Transmit_Request;
+		if (RetryCounter > nRetryCount) 
+			next_state = Tx_Report_Failure;
+		else 
+			next_state = Tx_Construct_Message;
 		end
 	
-	Tx_Report_Success: 
+	Tx_Report_Failure: 
 		begin
 		next_state = Tx_Wait_for_Transmit_Request;
 		end
@@ -101,11 +99,16 @@ always@(*)
 	Tx_Match_MessageID: 
 		begin
 		if ((TX_BUF_HEADER_BYTE_1 != RX_BUF_HEADER_BYTE_1) |
-			 (TRANSMIT != RX_BUF_FRAME_TYPE)) 
-			 next_state = Tx_Check_RetryCounter;
+			 (TRANSMIT[2:0] != RX_BUF_FRAME_TYPE)) 
+			next_state = Tx_Check_RetryCounter;
 		else 
 			if (GoodCRCMessageID & SOPmatch) 
 				next_state = Tx_Report_Success;
+		end
+		
+	Tx_Report_Success: 
+		begin
+		next_state = Tx_Wait_for_Transmit_Request;
 		end
 		
 	default: next_state = current_state;
@@ -117,30 +120,48 @@ always@(*)
 // logica de salidas
 always@ (*) begin
 	case (current_state)
-		Tx_Reset_RetryCounter: begin
+		Tx_Wait_for_Transmit_Request: 
+			begin
+			
+			end
+			
+		Tx_Reset_RetryCounter: 
+			begin
 			RetryCounter = 0;
-		end
-		Tx_Construct_Message: begin
+			end
+		
+		Tx_Construct_Message: 
+			begin
 			PassBytes = 1'b1;
-		end
-		Tx_Wait_for_PHY_response: begin
+			end
+		
+		Tx_Wait_for_PHY_response: 
+			begin
 			InitCRCReceiveTimer = 1'b1;
-		end
-		Tx_Report_Success: begin
+			end
+
+		Tx_Report_Success: 
+			begin
 			Alert_MessageSuccessful = 1'b1;
-		end
-		Tx_Report_Failure: begin
+			end
+
+		Tx_Report_Failure: 
+			begin
 			Alert_MessageFailed = 1'b1;
-		end
-		Tx_Check_RetryCounter: begin
+			end
+
+		Tx_Check_RetryCounter: 
+			begin
 			if((DFP == 1'b1) | (UFP == 1'b1))
 				RetryCounter = RetryCounter + 1;
 			else RetryCounter = RetryCounter;
-		end
-		Tx_Match_MessageID: begin
+			end
+			
+		Tx_Match_MessageID: 
+			begin
 			if(MessageIDCounter == MessageID) MID_Match = 1'b1;
 			else MID_Match = 1'b0;
-		end
+			end
 	endcase
 end
 
