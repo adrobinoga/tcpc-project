@@ -1,0 +1,5 @@
+read_verilog -sv "nombremodulo.v"
+hierarchy; proc; fsm; opt; memory; opt; techmap; opt
+dfflibmap -liberty cmos_cells.lib
+clean
+write_verilog -noattr "nombre_sintetizado.v"
