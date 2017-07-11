@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.66 (w)1999-2015 BSI
-[*] Mon Jul 10 16:46:03 2017
+[*] Mon Jul 10 20:38:05 2017
 [*]
 [dumpfile] "/media/moss/data/documents/universidad/cursos/Digitales II/proyecto final/repo/tcpc-project/src/testbench.vcd"
-[dumpfile_mtime] "Mon Jul 10 16:44:27 2017"
-[dumpfile_size] 81127
+[dumpfile_mtime] "Mon Jul 10 20:37:22 2017"
+[dumpfile_size] 152977
 [savefile] "/media/moss/data/documents/universidad/cursos/Digitales II/proyecto final/repo/tcpc-project/src/tests/i2c_slave_b/default_sel.gtkw"
-[timestart] 283000
+[timestart] 740000
 [size] 1325 744
-[pos] -1 -117
-*-18.700136 1890000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[pos] -1 -1
+*-18.700136 810000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] testbench.
 [sst_width] 225
 [signals_width] 204
@@ -19,11 +19,12 @@
 testbench.uut.CLK
 @22
 testbench.uut.D[7:0]
-@29
-testbench.uut.D[7:0]
 @28
+testbench.uut.D[7:0]
 testbench.uut.D_ready
 @22
+testbench.uut.Q[7:0]
+@29
 testbench.uut.Q[7:0]
 @28
 testbench.uut.SCL
