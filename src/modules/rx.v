@@ -5,6 +5,7 @@ module rx (
 		input wire 	 cable_reset, 
 		input wire 	 tx_state_machine_active, // Se encuentra activa la SM Tx?
 		input wire [7:0] DataBusIn, // Datos entrantes desde el módulo de registros
+
 		input wire [7:0] MESSAGE_HEADER_INFO_IN, // Registro de información de header 
 		input wire [7:0] RECEIVE_DETECT_IN, // Registro de notificación de mensaje
 		input wire [7:0] TX_BUF_HEADER_BYTE_1, // Header del mensaje en TX
@@ -29,8 +30,6 @@ module rx (
    reg [3:0] 		   nextState; // Registro próximo estado
    reg 			   RxBufferFull; // Señala si el buffer está lleno
    reg [3:0] 		   WriteGoodCRC_counter; // Contador de escritura en memoria de mensaje GoodCRC
- 		   
-
    wire 		   MessageRecivedFromPHY;
 
    

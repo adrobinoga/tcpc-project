@@ -1,47 +1,26 @@
-module Rx_tb;
+module testbench();
 
-input wire clk;
+   wire clk;
+   wire hard_reset;
+   wire [7:0] MESSAGE_HEADER_INFO;
+   wire [7:0] TX_BUF_HEADER_BYTE_0;
+   wire [7:0] TX_BUF_HEADER_BYTE_1;
+   wire [7:0] RECEIVE_DETECT;
+   wire       phy_rx_goodcrc;
+   wire       GoodCRC_Transmission_Complete;
+   wire       RECEIVE_DETECT_retro;
 
-output wire ALERT_TxMessageDiscarded;
-output wire Send_GoodCRC_message_to_PHY;
-output wire ALERT_ReceiveSOPStatusAsserted;	
-output wire idle;
-output wire message_received_from_phy;
+   
+   tester t(clk,hard_reset,MESSAGE_HEADER_INFO,TX_BUF_HEADER_BYTE_0,TX_BUF_HEADER_BYTE_1,RECEIVE_DETECT,phy_rx_goodcrc,GoodCRC_Transmission_Complete,RECEIVE_DETECT_retro);   
+   rx uut(clk,hard_reset,,,,MESSAGE_HEADER_INFO,RECEIVE_DETECT,TX_BUF_HEADER_BYTE_1,TX_BUF_HEADER_BYTE_0,,,,GoodCRC_Transmission_Complete,phy_rx_goodcrc,,,,,,,,,,RECEIVE_DETECT_retro);
 
-Banco_Pruebas_Rx t (
-.clk(clk), 
-.reset_L(hard_reset_L), 
-.tx(tx), 
-.Unexpected_GoodCRC_received(Unexpected_GoodCRC_received), 
-.GoodCRC_Message_discarded_bus_Idle(GoodCRC_Message_discarded_bus_Idle),
-.GoodCRC_Transmission_complete(GoodCRC_Transmission_complete)
-);
-
-rx uut (
-.clk(clk), 
-.reset_L(reset_L), 
-.tx(tx), 
-.Unexpected_GoodCRC_received(Unexpected_GoodCRC_received),
-.message_received_from_phy(message_received_from_phy), 
-.GoodCRC_Message_discarded_bus_Idle(GoodCRC_Message_discarded_bus_Idle), 
-.GoodCRC_Transmission_complete(GoodCRC_Transmission_complete), 
-.ALERT_TxMessageDiscarded(ALERT_TxMessageDiscarded), 
-.Send_GoodCRC_message_to_PHY(Send_GoodCRC_message_to_PHY),
-.idle(idle),
-.ALERT_ReceiveSOPStatusAsserted(ALERT_ReceiveSOPStatusAsserted)
-);
-
-    //-- Proceso al inicio
-initial begin
-    
-  //-- Fichero donde almacenar los resultados
-  $dumpfile("testbench.vcd");
-  $dumpvars(0, Rx_tb);
-    
-  # 100 $display("FIN TestBench");
-  $finish;
-end
-
-
-endmodule
-
+    initial
+     
+     begin
+	$dumpfile("simulacion_Rx.vcd");
+	$dumpvars;
+	$display ("Simulación");
+	$monitor ($time,,"clk = %b", clk);
+	#2000 $finish;
+     end
+endmodule  
