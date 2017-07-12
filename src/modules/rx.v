@@ -1,131 +1,231 @@
-module rx(
-		clk, reset_L, tx, Unexpected_GoodCRC_received,message_received_from_phy, GoodCRC_Message_discarded_bus_Idle, GoodCRC_Transmission_complete, ALERT_TxMessageDiscarded, Send_GoodCRC_message_to_PHY, ALERT_ReceiveSOPStatusAsserted, idle  );
+module rx ( 
+		 
+		input wire 	 clk, 
+		input wire 	 hard_reset, 
+		input wire 	 cable_reset, 
+		input wire 	 tx_state_machine_active, 
+		input wire [7:0] DataBusIn, 
+		input wire [7:0] MESSAGE_HEADER_INFO_IN, // Registro de información de header 
+		input wire [7:0] RECEIVE_DETECT_IN, // Registro de notificación de mensaje
+		input wire [7:0] TX_BUF_HEADER_BYTE_1, // Header del mensaje en TX
+		input wire [7:0] TX_BUF_HEADER_BYTE_0, // Header del mensaje en TX
+		input wire [7:0] RX_BUF_HEADER_BYTE_1, // Rx buffer header byte 1
+		input wire [7:0] RX_BUF_HEADER_BYTE_0, // Rx buffer header byte 0
+		input wire 	 GoodCRC_Message_Discarded,
+		input wire 	 GoodCRC_Transmission_Complete,
+                input wire 	 rx_goodcrc,               
+                output reg 	 rx_tx_message_discard, 
+		output reg [7:0] DirBus, // Bus de direcciones proveniente del I2C
+		output reg [7:0] DataBusOut, // Datos de salida de los registros.
+		output reg 	 memory_request,
+		output reg 	 RNW,
+		output wire 	 idle, 
+		output reg [7:0] RECEIVE_BYTE_COUNT_OUT,	
+                output reg [7:0] ALERT_Register,
+                output reg [7:0] RX_BUF_FRAME_TYPE,
+		output reg [7:0] RECEIVE_DETECT_OUT 
+		);
+   reg [3:0] 		   state; 
+   reg [3:0] 		   nextState; 
+   reg 			   RxBufferFull;
+   reg [3:0] 		   WriteGoodCRC_counter; 
+ 		   
 
-input reset_L;
-input clk;
-input tx;
-input Unexpected_GoodCRC_received;
-input GoodCRC_Message_discarded_bus_Idle;
-input GoodCRC_Transmission_complete;
-output reg ALERT_TxMessageDiscarded;
-output reg Send_GoodCRC_message_to_PHY;
-output reg ALERT_ReceiveSOPStatusAsserted;	
-output reg idle;
-output reg message_received_from_phy;
-reg [3:0] state;
-reg buffer;
-reg [3:0] next_state;
-reg next_idle;
-reg next_Message_Discard;
-reg Message_Discard;
+   wire 		   MessageRecivedFromPHY;
 
+   
+//Estados de la máquina
+   localparam PRL_Rx_Wait_For_PHY_Message = 4'b0001;
+   localparam PRL_Rx_Message_Discard      = 4'b0010; 
+   localparam PRL_Rx_Send_GoodCRC         = 4'b1000; 
+   localparam PRL_Rx_Report_SOP           = 4'b0100; 
 
-// Estados de la Máquina
-localparam RESET = 4'b0000;
-localparam Rx_Wait_for_PHY_message = 4'b0001;
-localparam Rx_Message_Discard = 4'b0010;
-localparam Rx_Report_SOP = 4'b0011;
-localparam Rx_Send_GoodCRC = 4'b0100;
+//Contadores de mensajes
+   localparam ControlMessageSize          = 4'b0101;
 
+//Los siguientes parámetros son valores dados por el estándar del USB Tipo C de Noviembre del 2016.
+//Alertas y Notificaciones
 
-always @(posedge clk) begin //Bloque de Flip Flops
+   localparam ALERT_DIR_0                   = 8'h10; 
+   localparam ALERT_DIR_1                   = 8'h11; 
+   
+//Direcciones del buffer para ser leídas
+   localparam HEADER_0                    = 82;
+   localparam HEADER_1                    = 83;
+   localparam BYTE_COUNT                  = 81;
+   localparam BUF_FRAME_TYPE              = 49;   
 
-	if(~reset_L) begin
+//Direcciones del buffer para ser escritas
 
-		state <= RESET;			
-		Message_Discard <= 1'b0;
-		idle <= 1'b1;
+   assign MessageRecivedFromPHY = RECEIVE_DETECT_IN[0] | RECEIVE_DETECT_IN[1] | RECEIVE_DETECT_IN[2] | RECEIVE_DETECT_IN[3] | RECEIVE_DETECT_IN[4] ; //Recibe mensajes
+   assign MessageType = RX_BUF_HEADER_BYTE_0[3:0]; // Tipo de mensaje recibido    
+   assign idle = state[0];   
+   
+//Bloque de Flip Flops
+   always @ (posedge(clk))
+     begin
+	if (hard_reset == 1'b1 || cable_reset == 1'b1)
+	  begin
+	     state <= PRL_Rx_Wait_For_PHY_Message; // Se regresa al estado incial	     
+	  end
+	else
+	  begin
+	     state <= nextState; //cambio de estado	     	     
+	  end
 
-			end
-	else	begin			
+	if (state == PRL_Rx_Send_GoodCRC )
+	  begin
+	     WriteGoodCRC_counter<=WriteGoodCRC_counter + 4'b0001; // counter+1
+	  end
+	else
+	  begin
+	     WriteGoodCRC_counter<= 4'b0000; // counter=0
+	  end
+	
+     end
 
-		state <= next_state;
-		Message_Discard <= next_Message_Discard;					
-		idle <= next_idle;
-	     	end
-
-			end
-
-always @(*)begin  //Lógica de Próximo Estado
-
-	case(state)
-	  RESET:       begin
-			     next_state = Rx_Wait_for_PHY_message;
-		       end
-
-	  Rx_Wait_for_PHY_message: 
-			if(~buffer && message_received_from_phy) begin
-				next_state = Rx_Message_Discard;		
-			end else begin 
-				next_state = Rx_Wait_for_PHY_message;
-			end
-
-	  Rx_Message_Discard:
-			if (Unexpected_GoodCRC_received) begin 
-				next_state = Rx_Report_SOP;		
-			end else begin 
-				next_state = Rx_Send_GoodCRC;
-			end
-	  
-	  Rx_Send_GoodCRC:
-			if (GoodCRC_Message_discarded_bus_Idle) begin 
-				next_state =Rx_Wait_for_PHY_message;		
-			end else if(GoodCRC_Transmission_complete) begin 
-				next_state = Rx_Report_SOP;
-			end
- 
-	  Rx_Report_SOP: begin
-			
-				next_state = Rx_Wait_for_PHY_message;
-			
-			 end
-
-	 default: next_state = state;
+//Lógica de Próximo Estado
+   always @ (*)
+     begin
+	case (state)	  
+	  PRL_Rx_Wait_For_PHY_Message:	    
+	    begin	 	       	   	       
+	       if ( ~RxBufferFull || MessageRecivedFromPHY )
+		 begin
+		    nextState <= PRL_Rx_Message_Discard;
+		 end
+	       else
+		 begin
+		    nextState<=state;		    
+		 end
+	    end
+	  PRL_Rx_Message_Discard:
+	    begin	 	       	       
+	       if (rx_goodcrc)
+		 begin  	       
+		    if (RX_BUF_HEADER_BYTE_0[3:0] == 4'b0001 )
+		      begin
+			 nextState <= PRL_Rx_Report_SOP;
+		      end
+		    else
+		      begin
+			 nextState <= PRL_Rx_Send_GoodCRC;
+		      end
+		 end
+	       else
+		 begin
+		    nextState <= PRL_Rx_Wait_For_PHY_Message; //Volver a estado inicial	   		    
+		 end
+	    end
+	  PRL_Rx_Send_GoodCRC:
+	    begin	 	       	       
+	       if (WriteGoodCRC_counter == ControlMessageSize) // Se cumplieron las 4 escrituras en memoria
+		 begin
+		    if (GoodCRC_Message_Discarded || GoodCRC_Transmission_Complete)
+		      begin  	       
+			 nextState <= PRL_Rx_Report_SOP;
+		      end
+		    else
+		      begin
+			 nextState <= state; //Se queda en el mismo estado
+		      end
+		 end // if (WriteGoodCRC_counter == ControlMessageSize)	       
+	       else
+		 begin		    
+		    nextState <= state; // Permanece en el mismo estado
+		 end
+	    end
+	  PRL_Rx_Report_SOP:
+	    begin	       	       
+	       nextState <= PRL_Rx_Wait_For_PHY_Message;	       
+	    end
+	  default:
+	    begin	       
+	       nextState <= state;	       
+	    end
 	endcase
-end
+     end
 
+//Lógica de Salida
+   always @ (*)
+     begin
+	case (state)
 
-
-always @(*)begin //Lógica de Salida
-case(state)
-	  RESET:       
-		       begin
-			     next_idle = 1'b1;
-			     next_Message_Discard = 1'b0;
-		       end
-
-	  Rx_Wait_for_PHY_message: 
-			begin
-			     next_idle = 1'b1;
-			     next_Message_Discard = 1'b0;
-			end
-
-	  Rx_Message_Discard:
-			begin
-			     next_idle = 1'b0;
-			     next_Message_Discard = 1'b1;
-			     buffer = 1'b0;
-			     message_received_from_phy = 1'b1;
-			if(tx) begin
-			     ALERT_TxMessageDiscarded = 1'b1;    
-			end else begin
-			     ALERT_TxMessageDiscarded = 1'b0;
-			end
-			end 
-	  
-	  Rx_Send_GoodCRC:
-			begin
-			     next_idle = 1'b0;
-			     Send_GoodCRC_message_to_PHY = 1'b1;
-		        end
- 
-	  Rx_Report_SOP: begin
-			     next_idle = 1'b0;
-			     ALERT_ReceiveSOPStatusAsserted = 1'b1;
-			
-			 end
-
-	endcase
-end
-
+	  PRL_Rx_Wait_For_PHY_Message:
+	    begin
+	       memory_request = 0;
+	       RNW = 1;
+	       
+	       DirBus<=8'h00; // Valor por defecto del bus de direcciones
+	       DataBusOut<=8'b00000000; // Valor por defecto del bus de datos
+	    end
+	  PRL_Rx_Message_Discard: // En este estado se realiza la tarea correspondiente a cada mensaje
+	    begin	 
+	       memory_request = 0;
+	       RNW = 0;
+      
+	       DirBus<=8'h00; // Valor por defecto del bus de direcciones
+	       DataBusOut<=8'b00000000; // Valor por defecto del bus de datos
+	    end
+	  PRL_Rx_Send_GoodCRC:
+	    begin
+	       memory_request = 1;
+	       RNW = 0;
+	       case (WriteGoodCRC_counter)
+		 4'b0000: // Se escribe la cabecera alta
+		   begin
+		      DirBus<=HEADER_1;		      
+		      DataBusOut<={8'b0000,RX_BUF_HEADER_BYTE_1[3:1],MESSAGE_HEADER_INFO_IN[0]};	       
+		   end
+		 4'b0001: // Se escribe la cabecera baja
+		   begin
+		      DirBus<=HEADER_0;		      
+		      DataBusOut<={MESSAGE_HEADER_INFO_IN[2:1],6'b000001};
+		   end
+		 4'b0010: // Se escribe la cabecera baja
+		   begin
+		      DirBus<=BYTE_COUNT;		      
+		      DataBusOut<=8'b00000011; // NÃºmero de bytes en el mensaje
+		   end
+		 4'b0011: // Se escribe el tipo de mensaje
+		   begin
+		      DirBus<=BUF_FRAME_TYPE;
+		      DataBusOut<=8'b00000000; //SOP Message
+		   end
+		 4'b0100: // Se levanta la alerta para que el master lea
+		   begin
+		      DirBus<=ALERT_DIR_0; // Dir_reg_alerta
+		      DataBusOut<=8'b00000100; // Alerta
+		   end
+		 4'b0101: // Se levanta la alerta para que el master lea
+		   begin
+		      DirBus<=ALERT_DIR_1; // Dir_reg_alerta
+		      DataBusOut<=8'b00000000; // Alerta
+		   end
+		 default:
+		   begin		      
+		      DirBus<=8'h00;
+		      DataBusOut<=8'b00000000;
+		   end
+	       endcase
+	    end
+	  PRL_Rx_Report_SOP:
+	    begin
+	       memory_request = 1;
+	       RNW = 0;
+	       
+	       DirBus<=47;
+	       DataBusOut<=8'b00000000;	       
+	    end
+	  default: //No haga nada
+	    begin
+	       memory_request = 0;
+	       RNW = 1;
+	       
+	       DirBus<=8'h00;
+	       DataBusOut<=8'b00000000;	
+	    end
+	endcase	
+     end
+   
 endmodule
