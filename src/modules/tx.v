@@ -7,7 +7,7 @@ module tx(
 	input MessageSenToPhy,
 	input GoodCRCResponse,
 	input CRC_RT_Timeout,
-	input MessageDiscardedBusIdle
+	input MessageDiscardedBusIdle,
 	input reset,
 	input clk
 	);
