@@ -17,7 +17,7 @@ module testbench();
     initial
      
      begin
-	$dumpfile("simulacion_Rx.vcd");
+	$dumpfile("testbench.vcd");
 	$dumpvars;
 	$display ("Simulación");
 	$monitor ($time,,"clk = %b", clk);

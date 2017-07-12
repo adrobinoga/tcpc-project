@@ -1,4 +1,4 @@
-module registros(
+module registers(
 	input CLK,
 	input RNW,			//indica si es read o write
 	input [15:0] WR_DATA,		// 16 bits de entrada
@@ -102,7 +102,7 @@ always @(posedge CLK)
 				00010001: begin
 					RD_DATA <= ALERT;
 					ACK <= 1;
-					  end;
+					  end
 				00010011: begin
 					RD_DATA <= ALERT_MASK;
 	                                ACK <= 1;

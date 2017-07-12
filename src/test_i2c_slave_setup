@@ -1,3 +1,5 @@
 tests/i2c_slave/testbench.v
-tests/i2c_slave/tester.v
+tests/i2c_slave/tester_generated.v
 
+# celdas
+cmos_cells.v

@@ -13,7 +13,7 @@ reg [31:0]	hard_reset_complete_timer;
 
 reg [4:0]	state;
 reg [4:0]	next_state;  //el profe dijo que era wire
-
+reg [2:0] 	transmit;	//el profe dijo que era wire
 reg [2:0] 	next_transmit;	//el profe dijo que era wire	
 wire 		pu_reset_L;
 reg [31:0]	next_hard_reset_complete_timer;  //el profe dijo que wire

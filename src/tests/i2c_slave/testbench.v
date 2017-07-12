@@ -4,7 +4,7 @@ module testbench;
 
 reg CLK;
 wire [7:0] D;
-wire SDA;
+tri1 SDA;
 wire SCL;
 wire ENB;
 wire RESET;
@@ -39,6 +39,6 @@ initial
 
 always #1 CLK=~CLK;
 
-initial #5000 $finish;
+initial #10000 $finish;
 
 endmodule

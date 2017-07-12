@@ -26,22 +26,24 @@ localparam 	IDLE=		1,
 		;
 
 // banderas
-reg stop;
-reg start;
 reg posedge_SCL;
 reg negedge_SCL;
 
-reg SDA_d; 	// valor de SDA retrasado
+reg [3:0] state;	// Current state
+reg [3:0] next_state; 	// Next state
+reg stop;
+reg start;
+
 reg SCL_d;	// valor de SCL retrasado
+reg SDA_d;	// valor de SDA retrasado
 
 reg RW;		// bit de escritura/lectura
 reg [3:0] bit_count; 	// contador de bit transmitidos/enviados
 reg inc_count;		// activa el contador de bits
 reg rst_count;		// resetea el contador de bits
 reg keep_reading;
-
-reg [3:0] state;	// Current state
-reg [3:0] next_state; 	// Next state
+reg next_keep_reading;
+reg set_reading;
 
 // registros intermedios para manejar los puertos bidireccionales
 reg SDA_o;
@@ -50,8 +52,11 @@ reg SDA_en;
 reg SCL_en;
 
 // manejo de los puertos bidireccionales
-assign SDA = SDA_en ? SDA_o : 1'bZ ;
-assign SCL = SCL_en ? SCL_o : 1'bZ ;
+//assign SDA = SDA_en ? SDA_o : 1'bZ ;
+//assign SCL = SCL_en ? SCL_o : 1'bZ ;
+
+TRIBUF tri_sda (.IN(SDA_o), .OUT(SDA), .EN(SDA_en));
+TRIBUF tri_scl (.IN(SCL_o), .OUT(SCL), .EN(SCL_en));
 
 // compara direccion del dispositivo
 wire address_match;
@@ -60,8 +65,8 @@ assign address_match = !(D[7:1]^dev_addr);
 // retraso del valor de SDA y SCL
 always @(posedge CLK)
 	begin
-	SDA_d <= #1 SDA;
-	SCL_d <= #1 SCL;
+	SDA_d <=  SDA;
+	SCL_d <=  SCL;
 	end
 
 // activa las condiciones start/stop cuando se presentan
@@ -72,12 +77,12 @@ always @(*)
 	stop = 0;
 	if (SCL)
 		begin
-		if (SDA & (!SDA_d))
+		if (SDA && (!SDA_d))
 			begin
 			//posedge
 			stop = 1;
 			end
-		if ((!SDA) & SDA_d)
+		if ((!SDA) && SDA_d)
 			begin
 			//negedge
 			start = 1;
@@ -88,22 +93,32 @@ always @(*)
 // activa las banderas para los flancos de SCL
 always @(posedge CLK)
 	begin
-	posedge_SCL <= #1 0;
-	negedge_SCL <= #1 0;
+	posedge_SCL <= 0;
+	negedge_SCL <= 0;
 	if (SCL & !SCL_d)
 		//posedge
-		posedge_SCL <= #1 1;
+		posedge_SCL <= 1;
 	if (!SCL & SCL_d)
 		//negedge
-		negedge_SCL <= #1 1;
+		negedge_SCL <= 1;
 		
 	if (rst_count)
-		bit_count <= #1 0;
+		bit_count <= 0;
 	else
 		begin
 		if (negedge_SCL)
 			if (inc_count)
-				bit_count <= #1 bit_count + 1;
+				bit_count <= bit_count + 1;
+		end
+	
+	// manejo de keep reading
+	if (set_reading)
+		keep_reading <= next_keep_reading;
+	
+	if (RESET) 
+		begin
+		bit_count <= 0;
+		keep_reading <= 0;
 		end
 	end
 
@@ -118,17 +133,15 @@ always @(posedge CLK)
 		begin
 		state <= next_state;
 		end
-	end
-
-// Manejo del contador bits
-always @(posedge CLK)
-	begin
-	
-	end
-	
+	end	
 	
 always @(posedge CLK)
 	begin
+	if (RESET)
+		begin
+		D <= 0;
+		RW <= 0;
+		end
 	case (state)
 		READ_ADDR:
 			begin
@@ -242,116 +255,142 @@ always @(*)
 	case (state)
 		IDLE:
 			begin 
-			inc_count = 	0;
-			rst_count = 	1;
-			D_ready = 	0;
-			SDA_en = 	0;
-			SDA_o = 	0;
-			SCL_en = 	0;
-			SCL_o =		0;
+			inc_count = 		0;
+			rst_count = 		1;
+			D_ready = 		0;
+			SDA_en = 		0;
+			SDA_o = 		0;
+			SCL_en = 		0;
+			SCL_o =			0;
+			set_reading = 		1;
+			next_keep_reading = 	0;
 			end
 			
 		WAIT_NEGSTART:
 			begin
-			inc_count = 	0;
-			rst_count = 	1;
-			D_ready = 	0;
-			SDA_en = 	0;
-			SDA_o = 	0;
-			SCL_en = 	0;
-			SCL_o =		0;
+			inc_count = 		0;
+			rst_count = 		1;
+			D_ready = 		0;
+			SDA_en = 		0;
+			SDA_o = 		0;
+			SCL_en = 		0;
+			SCL_o =			0;
+			set_reading = 		0;
+			next_keep_reading = 	0;
 			end
 				
 		READ_ADDR:
 			begin
-			inc_count = 	1;
-			rst_count = 	0;
-			D_ready = 	0;
-			SDA_en = 	0;
-			SDA_o = 	0;
-			SCL_en = 	0;
-			SCL_o =		0;
+			inc_count = 		1;
+			rst_count = 		0;
+			D_ready = 		0;
+			SDA_en = 		0;
+			SDA_o = 		0;
+			SCL_en = 		0;
+			SCL_o =			0;
+			set_reading = 		0;
+			next_keep_reading = 	0;
 			end
 		
 		SEND_ACK:
 			begin
-			inc_count = 	0;
-			rst_count = 	1;
-			D_ready = 	0;
-			SDA_en = 	1;
-			SDA_o = 	0;
-			SCL_en = 	0;
-			SCL_o =		0;
+			inc_count = 		0;
+			rst_count = 		1;
+			D_ready = 		0;
+			SDA_en = 		1;
+			SDA_o = 		0;
+			SCL_en = 		0;
+			SCL_o =			0;
+			set_reading = 		0;
+			next_keep_reading = 	0;
 			end
 			
 		WRITING:	
 			begin
-			inc_count = 	1;
-			rst_count = 	0;
-			D_ready = 	0;
-			SDA_en = 	0;
-			SDA_o = 	0;
-			SCL_en = 	0;
-			SCL_o =		0;
+			inc_count = 		1;
+			rst_count = 		0;
+			D_ready = 		0;
+			SDA_en = 		0;
+			SDA_o = 		0;
+			SCL_en = 		0;
+			SCL_o =			0;
 			if (negedge_SCL & bit_count==7)
 				D_ready = 1;
+			set_reading = 		0;
+			next_keep_reading = 	0;
 			end
 				
 		READING:
 			begin
-			inc_count = 	1;
-			rst_count = 	0;
-			D_ready = 	0;
-			SDA_en = 	1;
-			SDA_o = 	Q[7-bit_count];
-			SCL_en = 	0;
-			SCL_o =		0;
+			inc_count = 		1;
+			rst_count = 		0;
+			D_ready = 		0;
+			SDA_en = 		1;
+			SDA_o = 		Q[7-bit_count];
+			SCL_en = 		0;
+			SCL_o =			0;
+			set_reading = 		0;
+			next_keep_reading = 	0;
 			end
 		
 		WAIT_ACK1:
 			begin
-			inc_count = 	0;
-			rst_count = 	0;
-			D_ready = 	0;
-			SDA_en = 	0;
-			SDA_o = 	0;
-			SCL_en = 	0;
-			SCL_o =		0;
+			inc_count = 		0;
+			rst_count = 		0;
+			D_ready = 		0;
+			SDA_en = 		0;
+			SDA_o = 		0;
+			SCL_en = 		0;
+			SCL_o =			0;
+			set_reading = 		0;
+			next_keep_reading = 	0;
 			end
 			
 		WAIT_ACK2:
 			begin
-			inc_count = 	0;
-			rst_count = 	1;
-			D_ready = 	0;
-			SDA_en = 	0;
-			SDA_o = 	0;
-			SCL_en = 	0;
-			SCL_o =		0;
+			inc_count = 		0;
+			rst_count = 		1;
+			D_ready = 		0;
+			SDA_en = 		0;
+			SDA_o = 		0;
+			SCL_en = 		0;
+			SCL_o =			0;
 			if (SCL)
-				keep_reading = 	!SDA;
+				begin
+				set_reading = 		1;
+				next_keep_reading = 	!SDA;
+				end
+			else
+				begin
+				set_reading = 		0;
+				next_keep_reading = 	0;
+				end
 			end
 			
 		WAIT_STOP:
 			begin
-			inc_count = 	0;
-			rst_count = 	0;
-			D_ready = 	0;
-			SDA_en = 	0;
-			SDA_o = 	0;
-			SCL_en = 	0;
-			SCL_o =		0;
+			inc_count = 		0;
+			rst_count = 		0;
+			D_ready = 		0;
+			SDA_en = 		0;
+			SDA_o = 		0;
+			SCL_en = 		0;
+			SCL_o =			0;
+			set_reading = 		0;
+			next_keep_reading = 	0;
 			end
 			
 		default:
 			begin
-			inc_count = 	0;
-			rst_count = 	0;
-			D_ready = 	0;
-			SDA_en = 	0;
-			SDA_o = 	0;
-			SCL_en = 	0;
-			SCL_o =		0;
+			inc_count = 		0;
+			rst_count = 		0;
+			D_ready = 		0;
+			SDA_en = 		0;
+			SDA_o = 		0;
+			SCL_en = 		0;
+			SCL_o =			0;
+			set_reading = 		1;
+			next_keep_reading = 	0;
 			end
 	endcase
 	end

@@ -4,6 +4,7 @@ modules/rx.v
 modules/tx.v
 modules/registers.v
 modules/hard_reset.v
+modules/tcpc.v
 
 # Para agregar un nuevo modulo a la lista, se sigue el formato
 # modules/xxxxx.v

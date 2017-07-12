@@ -1,18 +1,35 @@
 [*]
 [*] GTKWave Analyzer v3.3.66 (w)1999-2015 BSI
-[*] Tue Jul  4 19:49:54 2017
+[*] Wed Jul 12 07:38:19 2017
 [*]
-[dumpfile] "/media/moss/data/documents/universidad/cursos/Digitales II/proyecto final/repo/tcpc-project/src/testbench.vcd"
-[dumpfile_mtime] "Tue Jul  4 19:49:40 2017"
-[dumpfile_size] 76990
-[savefile] "/media/moss/data/documents/universidad/cursos/Digitales II/proyecto final/repo/tcpc-project/src/tests/i2c_slave/default_sel.gtkw"
-[timestart] 0
+[dumpfile] "/home/moss/tcpc-project/src/testbench.vcd"
+[dumpfile_mtime] "Wed Jul 12 07:36:04 2017"
+[dumpfile_size] 156943
+[savefile] "/home/moss/tcpc-project/src/tests/i2c_slave/default_sel.gtkw"
+[timestart] 55900
 [size] 1000 600
 [pos] -1 -1
-*0.000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-15.533218 91700 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] testbench.
 [sst_width] 225
-[signals_width] 78
+[signals_width] 191
 [sst_expanded] 1
 [sst_vpaned_height] 160
+@28
+testbench.uut.CLK
+@22
+testbench.uut.D[7:0]
+@28
+testbench.uut.D_ready
+testbench.uut.SDA
+testbench.uut.SCL
+testbench.uut.RESET
+@22
+testbench.uut.state[3:0]
+testbench.uut.next_state[3:0]
+@28
+testbench.SDA_d
+testbench.SDA
+testbench.start
 [pattern_trace] 1
 [pattern_trace] 0
