@@ -26,7 +26,7 @@ initial
 		#20
 		RESET = 0;
 	
-		I2C.WRITE( c0,31 43  ff , 20)
+		I2C.WRITE( c0,31 43  c0 ff , 20)
 		I2C.WRITE( a0, 4 , 20)
 		I2C.WRITE( c0, 6 , 20)
 		end

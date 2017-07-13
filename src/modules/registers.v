@@ -64,8 +64,8 @@ module registers(
 	output reg [7:0] TX_BUF_OBJ2_BYTE_2,
 	output reg [7:0] TX_BUF_OBJ2_BYTE_3,
 
-	output reg [15:0] VBUS_VOLTAGE, 			//R 	
-				
+	output reg [15:0] VBUS_VOLTAGE	 			//R 	
+);
 
 //el request debe estar en 1 para que se realice un write o un read, si esta en 0 no pasa nada
 //se hace un case entre los que son de lectura y escritura. Si RNW=1---> lectura, si RNW=0--> escritura

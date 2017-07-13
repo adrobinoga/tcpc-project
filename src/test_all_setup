@@ -1,7 +1,9 @@
 tests/all/testbench.v
-tests/all/tester.v
-
--c modules/v_modules
+tests/all/tester_generated.v
 
 # celdas
 cmos_cells.v
+
+-c modules/v_modules
+
+

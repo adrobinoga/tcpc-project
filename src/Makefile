@@ -1,5 +1,6 @@
 test_tcpc:
 	make clean
+	./i2c_master_lib.py tests/all/tester.v
 	iverilog -o test.out -c test_all_setup
 	vvp test.out 
 	gtkwave testbench.vcd tests/all/default_sel.gtkw

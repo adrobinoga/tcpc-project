@@ -13,7 +13,7 @@ def i2c_write_replace(l):
     tester_insts = ""
 
     # parse macro parameters
-    # I2C.WRITE( (direccion del dispositivo << 1) + RWbit, bytes a escribir, tiempo entre cambios)
+    # I2C.WRITE( (direccion del dispositivo << 1) + RWbit, bytes a escribir, tiempo entre cambios, NOSTOP)
     params = l[l.find("(") + 1: l.find(")")].split(",")
 
     # parse device address and RW bit
@@ -26,6 +26,13 @@ def i2c_write_replace(l):
 
     # parse delay
     udelay = "\n\t\t#" + params[2].strip()
+
+    dostop = True
+    try:
+        if "NOSTOP" in params[3]:
+            dostop = False
+    except Exception:
+        None
 
     # generate start condition
     tester_insts += "\n\t\t// START CONDITION"
@@ -111,20 +118,21 @@ def i2c_write_replace(l):
             tester_insts += udelay
             tester_insts += "\n\t\t" + "SDA=0;"
 
-    # generate stop condition
-    tester_insts += "\n\t\t// STOP CONDITION"
-    tester_insts += udelay
-    tester_insts += "\n\t\t" + "SCL=0;"
-    tester_insts += udelay
-    tester_insts += "\n\t\t" + "SDA=0;"
-    tester_insts += udelay
-    tester_insts += "\n\t\t" + "SCL=1;"
-    tester_insts += udelay
-    tester_insts += "\n\t\t" + "SDA=1;"
-    tester_insts += udelay
-    tester_insts += "\n\t\t" + "SCL=0;"
-    tester_insts += udelay
-    tester_insts += "\n\t\t" + "SDA=0;"
+    if dostop:
+        # generate stop condition
+        tester_insts += "\n\t\t// STOP CONDITION"
+        tester_insts += udelay
+        tester_insts += "\n\t\t" + "SCL=0;"
+        tester_insts += udelay
+        tester_insts += "\n\t\t" + "SDA=0;"
+        tester_insts += udelay
+        tester_insts += "\n\t\t" + "SCL=1;"
+        tester_insts += udelay
+        tester_insts += "\n\t\t" + "SDA=1;"
+        tester_insts += udelay
+        tester_insts += "\n\t\t" + "SCL=0;"
+        tester_insts += udelay
+        tester_insts += "\n\t\t" + "SDA=0;"
 
     return tester_insts
 

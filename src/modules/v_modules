@@ -1,8 +1,10 @@
 # modulos generales
 modules/i2c_slave.v
+modules/i2c_slave_mg.v
 modules/rx.v
 modules/tx.v
 modules/registers.v
+modules/regs_writer.v
 modules/hard_reset.v
 modules/tcpc.v
 

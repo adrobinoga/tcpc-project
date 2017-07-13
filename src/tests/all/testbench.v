@@ -3,12 +3,26 @@
 module testbench;
 
 reg CLK;
+wire RESET;
+wire SCL;
+wand SDA;
+assign SDA = 1 ;
 
 // unidad bajo prueba
-tcpc uut (	);
+tcpc uut (
+	.CLK(CLK),
+	.RESET(RESET),
+	.SCL(SCL),
+	.SDA(SDA)
+);
 
 // instancia probador
-tester t (	);	
+tester t (
+	.SDA(SDA),
+	.SCL(SCL),
+	.ENB(ENB),
+	.RESET(RESET)		
+);
 
 initial 
 	begin
@@ -19,6 +33,6 @@ initial
 
 always #5 CLK=~CLK;
 
-initial #10000 $finish;
+initial #100000 $finish;
 
 endmodule

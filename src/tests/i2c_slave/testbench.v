@@ -4,12 +4,14 @@ module testbench;
 
 reg CLK;
 wire [7:0] D;
-tri1 SDA;
+wand SDA;
 wire SCL;
 wire ENB;
 wire RESET;
 wire D_ready;
 wire [7:0] Q;
+
+assign SDA = 1 ;
 
 // i2c slave
 i2c_slave uut (	.D(D),

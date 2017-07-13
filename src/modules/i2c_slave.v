@@ -3,6 +3,14 @@
 module i2c_slave(
 	output reg [7:0] D,	// registro donde escribe el master
 	output reg D_ready,	// bandera para indicar dato listo
+	output reg [3:0] bit_count, 	// contador de bit transmitidos/enviados
+	output reg start,
+	output reg stop,
+	output reg RW,		// bit de escritura/lectura
+	output reg nack,
+	output reg Q_done,
+	output address_match,
+	
 	inout SDA,		// linea de datos 
 	inout SCL,		// linea del reloj i2c
 	input [7:0] Q,		// registro a enviar al master
@@ -13,32 +21,30 @@ module i2c_slave(
 
 localparam dev_addr = 7'h60;	// direccion del dispositivo
 
-// declaracion de estados (codigo Gray)
-localparam 	IDLE=		1,
-		READ_ADDR=	2,
-		SEND_ACK=	3, 
-		WRITING=	4,
-		READING=	5,
-		WAIT_ACK1=	6,
-		WAIT_ACK2=	7,
-		WAIT_STOP=	8,
-		WAIT_NEGSTART=  9
+// declaracion de estados
+localparam 	IDLE=		0,
+		READ_ADDR=	1,
+		SEND_ACK=	2, 
+		WRITING=	3,
+		READING=	4,
+		WAIT_ACK1=	5,
+		WAIT_ACK2=	6,
+		WAIT_STOP=	7,
+		WAIT_NEGSTART=  8
 		;
 
 // banderas
 reg posedge_SCL;
 reg negedge_SCL;
 
+reg set_nack;
+
 reg [3:0] state;	// Current state
 reg [3:0] next_state; 	// Next state
-reg stop;
-reg start;
 
 reg SCL_d;	// valor de SCL retrasado
 reg SDA_d;	// valor de SDA retrasado
 
-reg RW;		// bit de escritura/lectura
-reg [3:0] bit_count; 	// contador de bit transmitidos/enviados
 reg inc_count;		// activa el contador de bits
 reg rst_count;		// resetea el contador de bits
 reg keep_reading;
@@ -120,6 +126,12 @@ always @(posedge CLK)
 		bit_count <= 0;
 		keep_reading <= 0;
 		end
+		
+	if (set_nack)
+		nack <= 1;
+	else 
+		nack <= 0;
+		
 	end
 
 // Carga de proximo estado
@@ -258,12 +270,14 @@ always @(*)
 			inc_count = 		0;
 			rst_count = 		1;
 			D_ready = 		0;
+			Q_done = 		0;
 			SDA_en = 		0;
 			SDA_o = 		0;
 			SCL_en = 		0;
 			SCL_o =			0;
 			set_reading = 		1;
 			next_keep_reading = 	0;
+			set_nack =		0;
 			end
 			
 		WAIT_NEGSTART:
@@ -271,12 +285,14 @@ always @(*)
 			inc_count = 		0;
 			rst_count = 		1;
 			D_ready = 		0;
+			Q_done = 		0;
 			SDA_en = 		0;
 			SDA_o = 		0;
 			SCL_en = 		0;
 			SCL_o =			0;
 			set_reading = 		0;
 			next_keep_reading = 	0;
+			set_nack =		0;
 			end
 				
 		READ_ADDR:
@@ -284,12 +300,14 @@ always @(*)
 			inc_count = 		1;
 			rst_count = 		0;
 			D_ready = 		0;
+			Q_done = 		0;
 			SDA_en = 		0;
 			SDA_o = 		0;
 			SCL_en = 		0;
 			SCL_o =			0;
 			set_reading = 		0;
 			next_keep_reading = 	0;
+			set_nack =		0;
 			end
 		
 		SEND_ACK:
@@ -297,12 +315,14 @@ always @(*)
 			inc_count = 		0;
 			rst_count = 		1;
 			D_ready = 		0;
+			Q_done = 		0;
 			SDA_en = 		1;
 			SDA_o = 		0;
 			SCL_en = 		0;
 			SCL_o =			0;
 			set_reading = 		0;
 			next_keep_reading = 	0;
+			set_nack =		0;
 			end
 			
 		WRITING:	
@@ -310,6 +330,7 @@ always @(*)
 			inc_count = 		1;
 			rst_count = 		0;
 			D_ready = 		0;
+			Q_done = 		0;
 			SDA_en = 		0;
 			SDA_o = 		0;
 			SCL_en = 		0;
@@ -318,6 +339,7 @@ always @(*)
 				D_ready = 1;
 			set_reading = 		0;
 			next_keep_reading = 	0;
+			set_nack =		0;
 			end
 				
 		READING:
@@ -325,12 +347,16 @@ always @(*)
 			inc_count = 		1;
 			rst_count = 		0;
 			D_ready = 		0;
+			Q_done = 		0;
 			SDA_en = 		1;
 			SDA_o = 		Q[7-bit_count];
 			SCL_en = 		0;
 			SCL_o =			0;
 			set_reading = 		0;
 			next_keep_reading = 	0;
+			set_nack =		0;
+			if (negedge_SCL & bit_count==7)
+				Q_done = 1;
 			end
 		
 		WAIT_ACK1:
@@ -338,12 +364,14 @@ always @(*)
 			inc_count = 		0;
 			rst_count = 		0;
 			D_ready = 		0;
+			Q_done = 		0;
 			SDA_en = 		0;
 			SDA_o = 		0;
 			SCL_en = 		0;
 			SCL_o =			0;
 			set_reading = 		0;
 			next_keep_reading = 	0;
+			set_nack =		0;
 			end
 			
 		WAIT_ACK2:
@@ -351,14 +379,17 @@ always @(*)
 			inc_count = 		0;
 			rst_count = 		1;
 			D_ready = 		0;
+			Q_done = 		0;
 			SDA_en = 		0;
 			SDA_o = 		0;
 			SCL_en = 		0;
 			SCL_o =			0;
+			set_nack =		0;
 			if (SCL)
 				begin
 				set_reading = 		1;
 				next_keep_reading = 	!SDA;
+				set_nack =		SDA;
 				end
 			else
 				begin
@@ -372,12 +403,14 @@ always @(*)
 			inc_count = 		0;
 			rst_count = 		0;
 			D_ready = 		0;
+			Q_done = 		0;
 			SDA_en = 		0;
 			SDA_o = 		0;
 			SCL_en = 		0;
 			SCL_o =			0;
 			set_reading = 		0;
 			next_keep_reading = 	0;
+			set_nack =		0;
 			end
 			
 		default:
@@ -385,12 +418,14 @@ always @(*)
 			inc_count = 		0;
 			rst_count = 		0;
 			D_ready = 		0;
+			Q_done = 		0;
 			SDA_en = 		0;
 			SDA_o = 		0;
 			SCL_en = 		0;
 			SCL_o =			0;
 			set_reading = 		1;
 			next_keep_reading = 	0;
+			set_nack =		0;
 			end
 	endcase
 	end

@@ -1,0 +1,47 @@
+[*]
+[*] GTKWave Analyzer v3.3.66 (w)1999-2015 BSI
+[*] Thu Jul 13 14:56:59 2017
+[*]
+[dumpfile] "/home/moss/tcpc-project/src/testbench.vcd"
+[dumpfile_mtime] "Thu Jul 13 14:55:39 2017"
+[dumpfile_size] 403578
+[savefile] "/home/moss/tcpc-project/src/tests/all/default_sel.gtkw"
+[timestart] 15030000
+[size] 1000 600
+[pos] 289 36
+*-21.533218 18565000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] testbench.
+[treeopen] testbench.uut.
+[sst_width] 225
+[signals_width] 206
+[sst_expanded] 1
+[sst_vpaned_height] 160
+@28
+testbench.CLK
+testbench.ENB
+testbench.RESET
+testbench.SCL
+testbench.SDA
+@22
+testbench.uut.D[7:0]
+@28
+testbench.uut.D_ready
+testbench.uut.address_match
+@22
+testbench.uut.FAULT_CONTROL[7:0]
+@28
+testbench.uut.FAULT_CONTROL[7:0]
+@22
+testbench.uut.ROLE_CONTROL[7:0]
+@28
+testbench.uut.ROLE_CONTROL[7:0]
+@22
+testbench.uut.i2c_slave_u.state[3:0]
+testbench.uut.ALERT[15:0]
+@28
+testbench.uut.ALERT[15:0]
+testbench.uut.nack
+@23
+testbench.uut.ADDR[7:0]
+[pattern_trace] 1
+[pattern_trace] 0
