@@ -17,15 +17,15 @@ module regs_writer(
 	input [7:0] ADDR_HReset,
 	input [7:0] ADDR_tcpm,
 	
-	input [15:0] WR_DATA_Tx,
-	input [15:0] WR_DATA_Rx,
-	input [15:0] WR_DATA_HReset,
-	input [15:0] WR_DATA_tcpm,
+	input [7:0] WR_DATA_Tx,
+	input [7:0] WR_DATA_Rx,
+	input [7:0] WR_DATA_HReset,
+	input [7:0] WR_DATA_tcpm,
 	
-	input [15:0] RD_DATA_Tx,
-	input [15:0] RD_DATA_Rx,
-	input [15:0] RD_DATA_HReset,
-	input [15:0] RD_DATA_tcpm,
+	input [7:0] RD_DATA_Tx,
+	input [7:0] RD_DATA_Rx,
+	input [7:0] RD_DATA_HReset,
+	input [7:0] RD_DATA_tcpm,
 	
 	input ACK,
 	
@@ -35,7 +35,7 @@ module regs_writer(
 	output ACK_tcpm,	
 		
 	// control del los registros
-	output reg [15:0] WR_DATA,
+	output reg [7:0] WR_DATA,
 	output reg [7:0] ADDR,
 	output reg REQUEST,
 	output reg RWN,
@@ -43,18 +43,13 @@ module regs_writer(
 	
 );
 
-
-
-
 /*
-
 	input CLK,
 	input RNW,			//indica si es read o write
 	input REQUEST,			//solicitud para hacer una transferencia
 	input [7:0] ADDR,		//direccion del registro
-	input [15:0] WR_DATA,		// 16 bits de entrada
-	output reg [15:0] RD_DATA,	//registro salida que va a leer a un registro
+	input [7:0] WR_DATA,		// 16 bits de entrada
+	output reg [7:0] RD_DATA,	//registro salida que va a leer a un registro
  	output reg ACK,
-
 */
 
